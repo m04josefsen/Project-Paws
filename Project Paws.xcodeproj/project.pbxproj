@@ -45,6 +45,11 @@
 			path = "Project PawsUITests";
 			sourceTree = "<group>";
 		};
+		FFC4E4942DE3518A007B1939 /* Documentation */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Documentation;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +80,7 @@
 		FFC4E45B2DE3509E007B1939 = {
 			isa = PBXGroup;
 			children = (
+				FFC4E4942DE3518A007B1939 /* Documentation */,
 				FFC4E4662DE3509E007B1939 /* Project Paws */,
 				FFC4E4752DE350A0007B1939 /* Project PawsTests */,
 				FFC4E47F2DE350A0007B1939 /* Project PawsUITests */,
@@ -109,6 +115,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				FFC4E4662DE3509E007B1939 /* Project Paws */,
+				FFC4E4942DE3518A007B1939 /* Documentation */,
 			);
 			name = "Project Paws";
 			packageProductDependencies = (
