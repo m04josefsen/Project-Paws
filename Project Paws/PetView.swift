@@ -30,7 +30,7 @@ class PetView: NSView {
     private var particleTimer: Timer?
     private var particles: [(point: CGPoint, symbol: String, color: NSColor, alpha: CGFloat, dy: CGFloat)] = []
 
-    // ---== Animation Configuration Dictionary ==---
+    // Animation Configuration Dictionary
     private static let animationConfigurations: [String: AnimationConfig] = [
         // Cat
         "cat_idleNeutral_sheet": AnimationConfig(sheetName: "cat_idleNeutral_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 14, speed: 0.25),
@@ -61,7 +61,6 @@ class PetView: NSView {
         "bunny_running_sheet": AnimationConfig(sheetName: "bunny_running_sheet", frameSize: CGSize(width: 70, height: 60), frameCount: 5, speed: 0.12), // Hopping fast
         "bunny_jumping_sheet": AnimationConfig(sheetName: "bunny_jumping_sheet", frameSize: CGSize(width: 60, height: 70), frameCount: 4, speed: 0.15)  // Big jump
     ]
-    // ---===========================================================---
 
     init(viewModel: PetViewModel) {
         self.viewModel = viewModel
@@ -95,13 +94,13 @@ class PetView: NSView {
         if let config = PetView.animationConfigurations[sheetAssetName] {
             return config
         } else {
-            print("⚠️ No animation config found in dictionary for sheet: \(sheetAssetName)")
+            print("No animation config found in dictionary for sheet: \(sheetAssetName)")
             let fallbackAssetName = "\(petBaseName)_idleNeutral_sheet" // Fallback to neutral idle of the same pet
             if let fallbackConfig = PetView.animationConfigurations[fallbackAssetName] {
                  print("INFO: Using fallback animation (neutral idle) for \(sheetAssetName): \(fallbackAssetName)")
                  return fallbackConfig
             }
-            print("⚠️ No fallback (neutral idle) animation found either for \(petBaseName).")
+            print("No fallback (neutral idle) animation found either for \(petBaseName).")
             return nil
         }
     }

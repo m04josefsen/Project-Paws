@@ -17,7 +17,6 @@ class PetViewModel: ObservableObject {
     private var lastInteractionTime: Date = Date()
 
     private var inactivityTimer: Timer? // For mood degradation and sleep checks
-    // private var peekTimer: Timer? // Removed as peeking states are gone
     private var temporaryStateTimer: Timer? // For states like eating, beingPetted
 
     init() {
@@ -45,8 +44,6 @@ class PetViewModel: ObservableObject {
         lastInteractionTime = Date()
         happinessScore = min(100, happinessScore + 20)
         
-        // Since .beingPetted state is removed, transition to a happy idle or sitting state briefly.
-        // You can customize this behavior.
         enterTemporaryState(.sitting, duration: 1.5) // Example: pet sits happily
         // Alternatively: enterTemporaryState(determineBaseStateFromHappiness(), duration: 1.5)
         resetInactivityTimer()
@@ -57,8 +54,6 @@ class PetViewModel: ObservableObject {
         lastInteractionTime = Date()
         happinessScore = min(100, happinessScore + 30)
 
-        // Since .eating state is removed, transition to a happy idle or sitting state briefly.
-        // You can customize this behavior.
         enterTemporaryState(.idleHappy, duration: 2.0) // Example: pet is happy after eating
         resetInactivityTimer()
         objectWillChange.send() // Ensure UI updates
@@ -83,11 +78,6 @@ class PetViewModel: ObservableObject {
 
     private func startTimers() {
         resetInactivityTimer()
-
-        // peekTimer?.invalidate() // Removed
-        // peekTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval.random(in: 20...40), repeats: true) { [weak self] _ in
-        //     self?.tryPeek() // tryPeek was removed
-        // }
     }
     
     private func resetInactivityTimer() {
@@ -98,13 +88,11 @@ class PetViewModel: ObservableObject {
     }
 
     private func handleInactivity() {
-        // Removed: guard let self = self else { return } // No longer needed here
-
         // Don't degrade mood or try to sleep if in an active temporary state or already sleeping.
         // Adjust based on new states if needed.
         if currentState == .running || currentState == .jumping || currentState == .sleeping {
              // Or if temporaryStateTimer is active and currentState is one of those temp states.
-            if temporaryStateTimer?.isValid ?? false && (currentState == .sitting /* if used as temp state */ || currentState == .idleHappy /* if used as temp state */) {
+            if temporaryStateTimer?.isValid ?? false && (currentState == .sitting /* if used as temp state */ || currentState == .idleHappy) {
                  // Allow temp state to finish
             } else {
                 return
@@ -126,9 +114,6 @@ class PetViewModel: ObservableObject {
         objectWillChange.send()
     }
 
-    // private func tryPeek() { ... } // Removed as peeking states are gone.
-    // If you want a similar behavior, you might implement a short "running" sequence.
-    
     func resetPetState() {
         happinessScore = 50
         lastInteractionTime = Date()

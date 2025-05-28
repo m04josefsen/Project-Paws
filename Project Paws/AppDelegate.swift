@@ -15,15 +15,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var petWindow: PetWindow?
     private var petViewModel = PetViewModel()
     
-    override init() { // Override init to test even earlier logging
-        super.init()
-        NSLog("DEBUG-NSLog: AppDelegate init CALLED")
-    }
-
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setupStatusItem()
         setupPetWindow()
-
         
         // Observe pet type changes to update menu potentially
         petViewModel.$currentPetType.sink { [weak self] _ in
