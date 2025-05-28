@@ -8,159 +8,275 @@
 import Cocoa
 import Combine
 
+// Configuration for a single animation sequence from a sprite sheet
+struct AnimationConfig {
+    let sheetName: String      // Asset name of the sprite sheet
+    let frameSize: CGSize      // Dimensions of a single frame
+    let frameCount: Int        // Number of frames in this animation
+    let speed: TimeInterval    // Duration of each frame
+}
+
 class PetView: NSView {
     private var viewModel: PetViewModel
     private var cancellables = Set<AnyCancellable>()
+    
+    private var animationTimer: Timer?
+    private var currentFrameIndex: Int = 0
+    private var currentSpriteSheet: NSImage?
+    private var currentFrameSize: CGSize = .zero
+    private var currentFrameCount: Int = 1
+    private var currentAnimationSpeed: TimeInterval = 0.2
 
-    // For particle effects
     private var particleTimer: Timer?
     private var particles: [(point: CGPoint, symbol: String, color: NSColor, alpha: CGFloat, dy: CGFloat)] = []
 
+    // ---== Animation Configuration Dictionary ==---
+    private static let animationConfigurations: [String: AnimationConfig] = [
+        // Cat
+        "cat_idleNeutral_sheet": AnimationConfig(sheetName: "cat_idleNeutral_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 14, speed: 0.25),
+        "cat_idleHappy_sheet": AnimationConfig(sheetName: "cat_idleHappy_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 18, speed: 0.2),
+        // TODO: add in asset
+        "cat_idleSad_sheet": AnimationConfig(sheetName: "cat_idleSad_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.3),
+        "cat_sleeping_sheet": AnimationConfig(sheetName: "cat_sleeping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.9),
+        "cat_sitting_sheet": AnimationConfig(sheetName: "cat_sitting_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.5),
+        "cat_running_sheet": AnimationConfig(sheetName: "cat_running_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 7, speed: 0.1),
+        "cat_jumping_sheet": AnimationConfig(sheetName: "cat_jumping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 13, speed: 0.12),
+
+        // TODO: Add dog and Bunny assets and fix gramcount
+        // Dog
+        "dog_idleNeutral_sheet": AnimationConfig(sheetName: "dog_idleNeutral_sheet", frameSize: CGSize(width: 80, height: 80), frameCount: 4, speed: 0.25),
+        "dog_idleHappy_sheet": AnimationConfig(sheetName: "dog_idleHappy_sheet", frameSize: CGSize(width: 80, height: 80), frameCount: 5, speed: 0.15), // Tail wagging
+        "dog_idleSad_sheet": AnimationConfig(sheetName: "dog_idleSad_sheet", frameSize: CGSize(width: 80, height: 80), frameCount: 3, speed: 0.3),     // Whimpering pose
+        "dog_sleeping_sheet": AnimationConfig(sheetName: "dog_sleeping_sheet", frameSize: CGSize(width: 80, height: 80), frameCount: 2, speed: 0.8),
+        "dog_sitting_sheet": AnimationConfig(sheetName: "dog_sitting_sheet", frameSize: CGSize(width: 80, height: 80), frameCount: 1, speed: 0.5),      // Attentive sit
+        "dog_running_sheet": AnimationConfig(sheetName: "dog_running_sheet", frameSize: CGSize(width: 90, height: 80), frameCount: 6, speed: 0.1),
+        "dog_jumping_sheet": AnimationConfig(sheetName: "dog_jumping_sheet", frameSize: CGSize(width: 80, height: 90), frameCount: 5, speed: 0.12),
+
+        // Bunny
+        "bunny_idleNeutral_sheet": AnimationConfig(sheetName: "bunny_idleNeutral_sheet", frameSize: CGSize(width: 60, height: 60), frameCount: 3, speed: 0.3), // Nose twitch
+        "bunny_idleHappy_sheet": AnimationConfig(sheetName: "bunny_idleHappy_sheet", frameSize: CGSize(width: 60, height: 60), frameCount: 4, speed: 0.2),   // Binky/happy hop
+        "bunny_idleSad_sheet": AnimationConfig(sheetName: "bunny_idleSad_sheet", frameSize: CGSize(width: 60, height: 60), frameCount: 3, speed: 0.35),  // Ears down
+        "bunny_sleeping_sheet": AnimationConfig(sheetName: "bunny_sleeping_sheet", frameSize: CGSize(width: 60, height: 60), frameCount: 2, speed: 0.9),
+        "bunny_sitting_sheet": AnimationConfig(sheetName: "bunny_sitting_sheet", frameSize: CGSize(width: 60, height: 60), frameCount: 1, speed: 0.5),     // Alert sitting
+        "bunny_running_sheet": AnimationConfig(sheetName: "bunny_running_sheet", frameSize: CGSize(width: 70, height: 60), frameCount: 5, speed: 0.12), // Hopping fast
+        "bunny_jumping_sheet": AnimationConfig(sheetName: "bunny_jumping_sheet", frameSize: CGSize(width: 60, height: 70), frameCount: 4, speed: 0.15)  // Big jump
+    ]
+    // ---===========================================================---
 
     init(viewModel: PetViewModel) {
         self.viewModel = viewModel
         super.init(frame: NSRect(origin: .zero, size: PET_WINDOW_SIZE))
-        self.wantsLayer = true // Important for performance and some drawing aspects
+        self.wantsLayer = true
         self.layer?.backgroundColor = NSColor.clear.cgColor
 
-        // Subscribe to ViewModel changes
         viewModel.objectWillChange.sink { [weak self] _ in
-            DispatchQueue.main.async { // Ensure UI updates are on the main thread
-                 self?.needsDisplay = true
-                 self?.updateParticleEffect()
+            DispatchQueue.main.async {
+                self?.updateAnimationState()
+                self?.updateParticleEffect()
             }
         }.store(in: &cancellables)
         
-        updateParticleEffect() // Initial setup
+        updateAnimationState()
+        updateParticleEffect()
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    deinit {
+        animationTimer?.invalidate()
+        particleTimer?.invalidate()
     }
 
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        guard let context = NSGraphicsContext.current?.cgContext else { return }
+    private func getAnimationConfig(for petType: PetType, state: PetState) -> AnimationConfig? {
+        let petBaseName = petType.rawValue
+        let animationStyleKey = state.rawValue
+        let sheetAssetName = "\(petBaseName)_\(animationStyleKey)_sheet"
 
-        // Clear background (already transparent due to window settings)
-        // NSColor.clear.set()
-        // dirtyRect.fill()
-
-        let petImageName = viewModel.currentPetType.rawValue
-        let petSize = min(bounds.width, bounds.height) * 0.6
-        let petOriginX = (bounds.width - petSize) / 2 + viewModel.positionOffset.x
-        let petOriginY = (bounds.height - petSize) / 2 + viewModel.positionOffset.y // Allow vertical movement for peeking from top
-
-        // Draw Pet
-        if let petSymbolImage = NSImage(systemSymbolName: petImageName, accessibilityDescription: viewModel.currentPetType.friendlyName) {
-            var symbolConfig = NSImage.SymbolConfiguration(pointSize: petSize, weight: .regular)
-            if viewModel.actionState == .sleeping {
-                 // Could use a different symbol or tint for sleeping
+        if let config = PetView.animationConfigurations[sheetAssetName] {
+            return config
+        } else {
+            print("⚠️ No animation config found in dictionary for sheet: \(sheetAssetName)")
+            let fallbackAssetName = "\(petBaseName)_idleNeutral_sheet" // Fallback to neutral idle of the same pet
+            if let fallbackConfig = PetView.animationConfigurations[fallbackAssetName] {
+                 print("INFO: Using fallback animation (neutral idle) for \(sheetAssetName): \(fallbackAssetName)")
+                 return fallbackConfig
             }
-            
-            // Tint based on mood (subtle)
-            var tintColor = NSColor.labelColor
-            if viewModel.mood == .sad {
-                tintColor = NSColor.systemGray
-            } else if viewModel.mood == .happy {
-                tintColor = NSColor.systemGreen // Or a more vibrant color
-            }
-            
-            if #available(macOS 11.0, *) { // NSImage.SymbolConfiguration is available from macOS 11
-                symbolConfig = symbolConfig.applying(.init(paletteColors: [tintColor]))
-                if let tintedImage = petSymbolImage.withSymbolConfiguration(symbolConfig) {
-                     tintedImage.draw(in: NSRect(x: petOriginX, y: petOriginY, width: petSize, height: petSize))
-                } else {
-                    petSymbolImage.draw(in: NSRect(x: petOriginX, y: petOriginY, width: petSize, height: petSize))
+            print("⚠️ No fallback (neutral idle) animation found either for \(petBaseName).")
+            return nil
+        }
+    }
+
+    private func updateAnimationState() {
+        animationTimer?.invalidate()
+        animationTimer = nil
+        
+        var imageLoaded = false
+
+        if let config = getAnimationConfig(for: viewModel.currentPetType, state: viewModel.currentState) {
+            if let sheet = NSImage(named: config.sheetName) {
+                currentSpriteSheet = sheet
+                currentFrameSize = config.frameSize
+                currentFrameCount = config.frameCount
+                currentAnimationSpeed = config.speed
+                currentFrameIndex = 0
+                imageLoaded = true
+
+                if currentFrameCount > 1 {
+                    animationTimer = Timer.scheduledTimer(withTimeInterval: currentAnimationSpeed, repeats: true) { [weak self] _ in
+                        guard let self = self else { return }
+                        self.currentFrameIndex = (self.currentFrameIndex + 1) % self.currentFrameCount
+                        self.needsDisplay = true
+                    }
                 }
             } else {
-                 petSymbolImage.draw(in: NSRect(x: petOriginX, y: petOriginY, width: petSize, height: petSize))
+                NSLog("Sprite sheet named '\(config.sheetName)' not found in Assets.xcassets")
             }
-        } else { // Fallback drawing
-            NSColor.gray.setFill()
-            let fallbackRect = NSRect(x: petOriginX, y: petOriginY, width: petSize, height: petSize)
-            context.fill(fallbackRect)
-            let attrs = [NSAttributedString.Key.font: NSFont.systemFont(ofSize: 10), NSAttributedString.Key.foregroundColor: NSColor.black]
-            ("Pet" as NSString).draw(at: CGPoint(x: petOriginX + 5, y: petOriginY + 5), withAttributes: attrs)
+        }
+
+        if !imageLoaded {
+            let petBaseName = viewModel.currentPetType.rawValue
+            let staticImageName = "\(petBaseName)_\(viewModel.currentState.rawValue)"
+            
+            if let staticImage = NSImage(named: staticImageName) {
+                currentSpriteSheet = staticImage
+                currentFrameSize = staticImage.size
+                currentFrameCount = 1
+                currentFrameIndex = 0
+                imageLoaded = true
+                NSLog("INFO: Loaded static fallback image: \(staticImageName)")
+            } else {
+                NSLog("Static fallback image named '\(staticImageName)' also not found. Trying default idle for \(petBaseName).")
+                let defaultIdleImageName = "\(petBaseName)_idleNeutral"
+                if let defaultImage = NSImage(named: defaultIdleImageName) {
+                    currentSpriteSheet = defaultImage
+                    currentFrameSize = defaultImage.size
+                    currentFrameCount = 1
+                    currentFrameIndex = 0
+                    imageLoaded = true
+                    NSLog("INFO: Loaded default static image: \(defaultIdleImageName)")
+                } else {
+                    NSLog("Default static image '\(defaultIdleImageName)' also not found. No image will be displayed for this state.")
+                    currentSpriteSheet = nil
+                }
+            }
+        }
+        self.needsDisplay = true
+    }
+    
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+
+        if let imageToDraw = currentSpriteSheet, currentFrameSize.width > 0, currentFrameSize.height > 0 {
+            let sourceRectX = CGFloat(currentFrameIndex) * currentFrameSize.width
+            let sourceRectY: CGFloat = 0
+            let sourceRect = NSRect(x: sourceRectX, y: sourceRectY, width: currentFrameSize.width, height: currentFrameSize.height)
+
+            let viewAspectRatio = bounds.width / bounds.height
+            let petImageAspectRatio = currentFrameSize.width / currentFrameSize.height
+            
+            var drawWidth = bounds.width
+            var drawHeight = bounds.height
+
+            if viewAspectRatio > petImageAspectRatio {
+                drawWidth = drawHeight * petImageAspectRatio
+            } else {
+                drawHeight = drawWidth / petImageAspectRatio
+            }
+            
+            let maxDisplaySizeFactor: CGFloat = 0.95 // Allow pet to take up to 95% of the smaller dimension of PET_WINDOW_SIZE
+            let maxAllowedWidth = PET_WINDOW_SIZE.width * maxDisplaySizeFactor
+            let maxAllowedHeight = PET_WINDOW_SIZE.height * maxDisplaySizeFactor
+
+            if drawWidth > maxAllowedWidth || drawHeight > maxAllowedHeight {
+                let widthScale = maxAllowedWidth / drawWidth
+                let heightScale = maxAllowedHeight / drawHeight
+                let scale = min(widthScale, heightScale) // Use the smaller scale to fit both dimensions
+                drawWidth *= scale
+                drawHeight *= scale
+            }
+
+            let petOriginX = (bounds.width - drawWidth) / 2 + viewModel.positionOffset.x
+            let petOriginY = (bounds.height - drawHeight) / 2 + viewModel.positionOffset.y
+            let destinationRect = NSRect(x: petOriginX, y: petOriginY, width: drawWidth, height: drawHeight)
+
+            imageToDraw.draw(in: destinationRect, from: sourceRect, operation: .sourceOver, fraction: 1.0)
+        } else {
+            NSColor.systemPurple.withAlphaComponent(0.5).setFill()
+            let fallbackRect = bounds.insetBy(dx: bounds.width * 0.25, dy: bounds.height * 0.25)
+            let path = NSBezierPath(ovalIn: fallbackRect)
+            path.fill()
+            ("🐾?" as NSString).draw(at: NSPoint(x: fallbackRect.midX - 10, y: fallbackRect.midY - 8), withAttributes: [.font: NSFont.systemFont(ofSize: 12)])
         }
         
-        // Draw particles (hearts, zzz, broken hearts)
         for particle in particles {
-            let particleSize = petSize * 0.3
-            if let particleSymbol = NSImage(systemSymbolName: particle.symbol, accessibilityDescription: particle.symbol) {
-                let symbolConfig = NSImage.SymbolConfiguration(pointSize: particleSize, weight: .regular)
-                                    .applying(.init(paletteColors: [particle.color.withAlphaComponent(particle.alpha)]))
-                if let tintedImage = particleSymbol.withSymbolConfiguration(symbolConfig) {
+            let particleDisplaySize = PET_WINDOW_SIZE.width * 0.25
+            if let particleSymbolImage = NSImage(systemSymbolName: particle.symbol, accessibilityDescription: particle.symbol) {
+                let symbolConfig = NSImage.SymbolConfiguration(pointSize: particleDisplaySize, weight: .regular)
+                                        .applying(.init(paletteColors: [particle.color.withAlphaComponent(particle.alpha)]))
+                if let tintedImage = particleSymbolImage.withSymbolConfiguration(symbolConfig) {
                     tintedImage.draw(at: particle.point, from: .zero, operation: .sourceOver, fraction: particle.alpha)
                 }
             }
         }
-
-
-        // Draw Eyes if sleeping (simple lines)
-        if viewModel.actionState == .sleeping {
-            NSColor.labelColor.setStroke()
-            let eyeY = petOriginY + petSize * 0.6
-            let eyePathLeft = NSBezierPath()
-            eyePathLeft.move(to: CGPoint(x: petOriginX + petSize * 0.25, y: eyeY))
-            eyePathLeft.line(to: CGPoint(x: petOriginX + petSize * 0.4, y: eyeY))
-            eyePathLeft.lineWidth = 2.0
-            eyePathLeft.stroke()
-
-            let eyePathRight = NSBezierPath()
-            eyePathRight.move(to: CGPoint(x: petOriginX + petSize * 0.6, y: eyeY))
-            eyePathRight.line(to: CGPoint(x: petOriginX + petSize * 0.75, y: eyeY))
-            eyePathRight.lineWidth = 2.0
-            eyePathRight.stroke()
-        }
     }
-    
+
     private func updateParticleEffect() {
         particleTimer?.invalidate()
         particles.removeAll()
 
         var symbol = ""
         var color = NSColor.red
-        var shouldAnimate = false
+        var shouldAnimateParticles = false
+        let currentHappiness = viewModel.happinessScore
 
-        switch viewModel.actionState {
-        case .showingLove:
-            symbol = "heart.fill"
-            color = .systemRed
-            shouldAnimate = true
-        case .showingSadness:
-            symbol = "heart.slash.fill" // Or "exclamationmark.triangle.fill"
-            color = .systemGray
-            shouldAnimate = true
+        switch viewModel.currentState {
+        case .idleHappy:
+             if currentHappiness > 60 {
+                symbol = "heart.fill"
+                color = .systemRed
+                shouldAnimateParticles = true
+            }
+        case .sitting: // If sitting is used as a temporary happy state from an interaction
+            // The check for temporaryStateTimer?.isValid was incorrect as the timer is in the ViewModel.
+            // If the pet is sitting and happy, it's likely due to a recent positive interaction.
+            if currentHappiness > 60 {
+                symbol = "heart.fill"
+                color = .systemPink // Slightly different color for variety
+                shouldAnimateParticles = true
+            }
+        case .idleSad:
+            if currentHappiness < 40 {
+                symbol = "heart.slash.fill"
+                color = .systemGray
+                shouldAnimateParticles = true
+            }
         case .sleeping:
             symbol = "zzz"
             color = .systemBlue
-            shouldAnimate = true
+            shouldAnimateParticles = true
         default:
             break
         }
 
-        if shouldAnimate && !symbol.isEmpty {
-            // Add initial particles
+        if shouldAnimateParticles && !symbol.isEmpty {
             for _ in 0..<3 {
-                let xPos = CGFloat.random(in: bounds.width * 0.2 ... bounds.width * 0.8)
-                let yPos = bounds.height * 0.7 // Start above pet
-                particles.append((CGPoint(x: xPos, y: yPos), symbol, color, 1.0, CGFloat.random(in: 0.5...1.5)))
+                let xPos = CGFloat.random(in: bounds.width * 0.4 ... bounds.width * 0.6)
+                let yPos = bounds.height * 0.65 + CGFloat.random(in: -5...5)
+                particles.append((CGPoint(x: xPos, y: yPos), symbol, color, 1.0, CGFloat.random(in: 0.6...1.2) * (symbol == "zzz" ? 0.5 : 1.0)))
             }
             
-            particleTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+            particleTimer = Timer.scheduledTimer(withTimeInterval: 0.07, repeats: true) { [weak self] _ in
                 guard let self = self else { return }
                 var newParticles: [(CGPoint, String, NSColor, CGFloat, CGFloat)] = []
                 for var particle in self.particles {
-                    particle.point.y += particle.dy // Move up or down based on dy
-                    particle.alpha -= 0.05 // Fade out
-                    if particle.alpha > 0.1 { // Keep if visible
-                        newParticles.append(particle)
-                    }
+                    particle.point.y += particle.dy
+                    particle.alpha -= 0.04
+                    if particle.alpha > 0.05 { newParticles.append(particle) }
                 }
                 self.particles = newParticles
                 if self.particles.isEmpty {
                     self.particleTimer?.invalidate()
+                    self.particleTimer = nil
                 }
                 self.needsDisplay = true
             }
@@ -168,19 +284,25 @@ class PetView: NSView {
         needsDisplay = true
     }
 
-
     override func mouseDown(with event: NSEvent) {
-        // Check if click is on the pet area (approximate)
         let clickLocation = convert(event.locationInWindow, from: nil)
-        let petRect = NSRect(x: (bounds.width - PET_WINDOW_SIZE.width*0.6) / 2 + viewModel.positionOffset.x,
-                             y: (bounds.height - PET_WINDOW_SIZE.height*0.6) / 2 + viewModel.positionOffset.y,
-                             width: PET_WINDOW_SIZE.width*0.6,
-                             height: PET_WINDOW_SIZE.height*0.6)
+        
+        // Use the last calculated drawWidth/Height if available, or approximate
+        // For simplicity, we continue approximation. More accurate would be to store the drawn pet rect.
+        let petVisualWidth = PET_WINDOW_SIZE.width * 0.8
+        let petVisualHeight = PET_WINDOW_SIZE.height * 0.8
 
-        if petRect.contains(clickLocation) {
+        let petClickableRect = NSRect(
+            x: (bounds.width - petVisualWidth) / 2 + viewModel.positionOffset.x,
+            y: (bounds.height - petVisualHeight) / 2 + viewModel.positionOffset.y,
+            width: petVisualWidth,
+            height: petVisualHeight
+        )
+
+        if petClickableRect.contains(clickLocation) {
             viewModel.petInteracted()
         }
     }
     
-    override var acceptsFirstResponder: Bool { return true } // To handle mouse down
+    override var acceptsFirstResponder: Bool { return true }
 }

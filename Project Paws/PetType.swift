@@ -6,17 +6,17 @@
 //
 
 enum PetType: String, CaseIterable, Identifiable {
-    case tortoise = "tortoise.fill"
-    case bird = "bird.fill"
-    case fish = "fish.fill"
+    case cat = "cat"
+    case dog = "dog"
+    case bunny = "bunny"
 
     var id: String { self.rawValue }
 
     var friendlyName: String {
         switch self {
-        case .tortoise: return "Tortoise"
-        case .bird: return "Bird"
-        case .fish: return "Fish"
+        case .cat: return "Cat"
+        case .dog: return "Dog"
+        case .bunny: return "Bunny"
         }
     }
 }

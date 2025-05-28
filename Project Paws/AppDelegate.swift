@@ -8,15 +8,22 @@
 import Cocoa
 import Combine
 
-@main
+import Foundation // For NSLog
+
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var petWindow: PetWindow?
     private var petViewModel = PetViewModel()
+    
+    override init() { // Override init to test even earlier logging
+        super.init()
+        NSLog("DEBUG-NSLog: AppDelegate init CALLED")
+    }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setupStatusItem()
         setupPetWindow()
+
         
         // Observe pet type changes to update menu potentially
         petViewModel.$currentPetType.sink { [weak self] _ in
@@ -65,7 +72,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupPetWindow() {
-        guard let mainScreen = NSScreen.main else {
+         guard let mainScreen = NSScreen.main else {
             print("Error: Could not find main screen.")
             return
         }
@@ -79,7 +86,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let windowY = visibleFrame.origin.y + visibleFrame.height - PET_WINDOW_SIZE.height - NOTCH_AREA_OFFSET
         
         let petWindowRect = NSRect(x: windowX, y: windowY, width: PET_WINDOW_SIZE.width, height: PET_WINDOW_SIZE.height)
-
+    
         petWindow = PetWindow(contentRect: petWindowRect, backing: .buffered, defer: false)
         
         let petView = PetView(viewModel: petViewModel)
