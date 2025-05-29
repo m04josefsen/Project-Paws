@@ -16,6 +16,7 @@ struct AnimationConfig {
     let speed: TimeInterval    // Duration of each frame
 }
 
+// Responsible for drawing pet and visual effects
 class PetView: NSView {
     private var viewModel: PetViewModel
     private var cancellables = Set<AnyCancellable>()

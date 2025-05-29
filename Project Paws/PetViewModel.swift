@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+// The "brain" for your pet, holds the pet's current state, manages its logic, and handles interactions
 class PetViewModel: ObservableObject {
     @Published var currentPetType: PetType = .cat
     @Published var currentState: PetState = .idleNeutral
@@ -16,7 +17,7 @@ class PetViewModel: ObservableObject {
     var happinessScore: Int = 50 // 0-100 (Made internal)
     private var lastInteractionTime: Date = Date()
 
-    private var inactivityTimer: Timer? // For mood degradation and sleep checks
+    private var inactivityTimer: Timer? // For mood degradation and sleep checks 
     private var temporaryStateTimer: Timer? // For states like eating, beingPetted
 
     init() {

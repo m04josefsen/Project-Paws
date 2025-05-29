@@ -5,6 +5,7 @@
 //  Created by Marco Josefsen on 28/05/2025.
 //
 
+// Defines the different types of pets
 enum PetType: String, CaseIterable, Identifiable {
     case cat = "cat"
     case dog = "dog"

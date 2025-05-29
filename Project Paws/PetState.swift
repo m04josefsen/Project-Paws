@@ -7,6 +7,7 @@
 
 import Foundation
 
+// Defines the different states a pet can be in
 enum PetState: String, CaseIterable {
     // Base idle states reflecting general disposition
     case idleNeutral

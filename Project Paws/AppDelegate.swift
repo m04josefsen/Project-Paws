@@ -8,8 +8,6 @@
 import Cocoa
 import Combine
 
-import Foundation // For NSLog
-
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var petWindow: PetWindow?
@@ -66,27 +64,37 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupPetWindow() {
-         guard let mainScreen = NSScreen.main else {
-            print("Error: Could not find main screen.")
+        NSLog("AppDelegate (Adaptor): setupPetWindow - STARTING")
+        
+        guard let mainScreen = NSScreen.main else {
+            NSLog("Error: Could not find main screen.")
             return
         }
         
-        let screenRect = mainScreen.frame
-        // Position at top-center. Adjust Y if you want it lower than the absolute top edge.
-        // Consider the menu bar height. visibleFrame might be better.
-        let visibleFrame = mainScreen.visibleFrame
-        let windowX = visibleFrame.origin.x + (visibleFrame.width - PET_WINDOW_SIZE.width) / 2
-        // Position it at the very top of the visible frame, then offset slightly if needed by NOTCH_AREA_OFFSET
-        let windowY = visibleFrame.origin.y + visibleFrame.height - PET_WINDOW_SIZE.height - NOTCH_AREA_OFFSET
+        let screenFrame = mainScreen.frame
+
+        // Calculate X-coordinate for the pet window's origin (left edge):
+        // 1. Find the desired center X-point for your pet:
+        let screenCenterX = screenFrame.origin.x + (screenFrame.width / 2)
+        let petDesiredCenterX = screenCenterX + HORIZONTAL_OFFSET_FOR_PET_CENTER
+        // 2. Calculate the window's origin X based on its desired center:
+        let windowX = petDesiredCenterX - (PET_WINDOW_SIZE.width / 2)
+
+        let petWindowTopY = (screenFrame.origin.y + screenFrame.height) - VERTICAL_OFFSET_FROM_SCREEN_TOP
+        let windowY = petWindowTopY - PET_WINDOW_SIZE.height 
         
         let petWindowRect = NSRect(x: windowX, y: windowY, width: PET_WINDOW_SIZE.width, height: PET_WINDOW_SIZE.height)
-    
+        
+        NSLog("AppDelegate (Adaptor): mainScreen.frame = \(screenFrame)")
+        NSLog("AppDelegate (Adaptor): Calculated petWindowRect = \(petWindowRect)")
+        
         petWindow = PetWindow(contentRect: petWindowRect, backing: .buffered, defer: false)
         
         let petView = PetView(viewModel: petViewModel)
         petWindow?.contentView = petView
         petWindow?.makeKeyAndOrderFront(nil)
-        // petWindow?.orderFrontRegardless() // Ensure it's visible
+        
+        NSLog("AppDelegate (Adaptor): setupPetWindow - FINISHED")
     }
 
     @objc func selectPet(_ sender: NSMenuItem) {
@@ -101,7 +109,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func applicationWillTerminate(_ notification: Notification) {
-        // Clean up timers or other resources if necessary
         petViewModel.performCleanup()
     }
 }
