@@ -36,31 +36,36 @@ class PetView: NSView {
         // Cat
         "cat_idleNeutral_sheet": AnimationConfig(sheetName: "cat_idleNeutral_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 14, speed: 0.25),
         "cat_idleHappy_sheet": AnimationConfig(sheetName: "cat_idleHappy_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 18, speed: 0.2),
-        // TODO: add in asset
+        // TODO: missing
         "cat_idleSad_sheet": AnimationConfig(sheetName: "cat_idleSad_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.3),
         "cat_sleeping_sheet": AnimationConfig(sheetName: "cat_sleeping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.9),
         "cat_sitting_sheet": AnimationConfig(sheetName: "cat_sitting_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.5),
         "cat_running_sheet": AnimationConfig(sheetName: "cat_running_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 7, speed: 0.1),
         "cat_jumping_sheet": AnimationConfig(sheetName: "cat_jumping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 13, speed: 0.12),
 
-        // TODO: Add dog and Bunny assets and fix gramcount
         // Dog
-        "dog_idleNeutral_sheet": AnimationConfig(sheetName: "dog_idleNeutral_sheet", frameSize: CGSize(width: 80, height: 80), frameCount: 4, speed: 0.25),
-        "dog_idleHappy_sheet": AnimationConfig(sheetName: "dog_idleHappy_sheet", frameSize: CGSize(width: 80, height: 80), frameCount: 5, speed: 0.15), // Tail wagging
-        "dog_idleSad_sheet": AnimationConfig(sheetName: "dog_idleSad_sheet", frameSize: CGSize(width: 80, height: 80), frameCount: 3, speed: 0.3),     // Whimpering pose
-        "dog_sleeping_sheet": AnimationConfig(sheetName: "dog_sleeping_sheet", frameSize: CGSize(width: 80, height: 80), frameCount: 2, speed: 0.8),
-        "dog_sitting_sheet": AnimationConfig(sheetName: "dog_sitting_sheet", frameSize: CGSize(width: 80, height: 80), frameCount: 1, speed: 0.5),      // Attentive sit
-        "dog_running_sheet": AnimationConfig(sheetName: "dog_running_sheet", frameSize: CGSize(width: 90, height: 80), frameCount: 6, speed: 0.1),
-        "dog_jumping_sheet": AnimationConfig(sheetName: "dog_jumping_sheet", frameSize: CGSize(width: 80, height: 90), frameCount: 5, speed: 0.12),
+        // TODO: shows up wrong
+        "dog_idleNeutral_sheet": AnimationConfig(sheetName: "dog_idleNeutral_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 10, speed: 0.25),
+        // TODO: missing
+        "dog_idleHappy_sheet": AnimationConfig(sheetName: "dog_idleHappy_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 5, speed: 0.15),
+        // TODO: missing
+        "dog_idleSad_sheet": AnimationConfig(sheetName: "dog_idleSad_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.3),
+        "dog_sleeping_sheet": AnimationConfig(sheetName: "dog_sleeping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 8, speed: 0.8),
+        "dog_sitting_sheet": AnimationConfig(sheetName: "dog_sitting_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 8, speed: 0.5),
+        "dog_running_sheet": AnimationConfig(sheetName: "dog_running_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 6, speed: 0.1),
+        // TODO: missing
+        "dog_jumping_sheet": AnimationConfig(sheetName: "dog_jumping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 5, speed: 0.12),
 
         // Bunny
-        "bunny_idleNeutral_sheet": AnimationConfig(sheetName: "bunny_idleNeutral_sheet", frameSize: CGSize(width: 60, height: 60), frameCount: 3, speed: 0.3), // Nose twitch
-        "bunny_idleHappy_sheet": AnimationConfig(sheetName: "bunny_idleHappy_sheet", frameSize: CGSize(width: 60, height: 60), frameCount: 4, speed: 0.2),   // Binky/happy hop
-        "bunny_idleSad_sheet": AnimationConfig(sheetName: "bunny_idleSad_sheet", frameSize: CGSize(width: 60, height: 60), frameCount: 3, speed: 0.35),  // Ears down
-        "bunny_sleeping_sheet": AnimationConfig(sheetName: "bunny_sleeping_sheet", frameSize: CGSize(width: 60, height: 60), frameCount: 2, speed: 0.9),
-        "bunny_sitting_sheet": AnimationConfig(sheetName: "bunny_sitting_sheet", frameSize: CGSize(width: 60, height: 60), frameCount: 1, speed: 0.5),     // Alert sitting
-        "bunny_running_sheet": AnimationConfig(sheetName: "bunny_running_sheet", frameSize: CGSize(width: 70, height: 60), frameCount: 5, speed: 0.12), // Hopping fast
-        "bunny_jumping_sheet": AnimationConfig(sheetName: "bunny_jumping_sheet", frameSize: CGSize(width: 60, height: 70), frameCount: 4, speed: 0.15)  // Big jump
+        "bunny_idleNeutral_sheet": AnimationConfig(sheetName: "bunny_idleNeutral_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 12, speed: 0.3),
+        "bunny_idleHappy_sheet": AnimationConfig(sheetName: "bunny_idleHappy_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 5, speed: 0.2),
+        // TODO: missing
+        "bunny_idleSad_sheet": AnimationConfig(sheetName: "bunny_idleSad_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.35),
+        "bunny_sleeping_sheet": AnimationConfig(sheetName: "bunny_sleeping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 6, speed: 0.9),
+        // TODO: missing
+        "bunny_sitting_sheet": AnimationConfig(sheetName: "bunny_sitting_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 1, speed: 0.5),
+        "bunny_running_sheet": AnimationConfig(sheetName: "bunny_running_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 8, speed: 0.12),
+        "bunny_jumping_sheet": AnimationConfig(sheetName: "bunny_jumping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 11, speed: 0.15)
     ]
 
     init(viewModel: PetViewModel) {

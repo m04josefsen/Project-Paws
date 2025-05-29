@@ -13,3 +13,5 @@
 - **Sound effects**
 - **Persistent pet state using CoreData or UserDefaults.**
 - **Menu bar drop down with feed and pet?**
+
+- **Missing Assets: bunny sitting, idleSad for all, dog idleHappy**
