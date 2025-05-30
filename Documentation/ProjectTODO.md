@@ -15,3 +15,4 @@
 - **Menu bar drop down with feed and pet?**
 
 - **Missing Assets: bunny sitting, idleSad for all, dog idleHappy**
+- **Fix sleeping, sitting, emotion mechanism**

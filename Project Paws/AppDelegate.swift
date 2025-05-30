@@ -8,10 +8,11 @@
 import Cocoa
 import Combine
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private var petWindow: PetWindow?
     private var petViewModel = PetViewModel()
+    private var selectPetSubmenuForDelegate: NSMenu?
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setupStatusItem()
@@ -40,26 +41,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     private func updateStatusMenu() {
-        let menu = NSMenu()
+        NSLog("AppDelegate: updateStatusMenu called. ViewModel's currentPetType: \(petViewModel.currentPetType.friendlyName)")
+        let menu = NSMenu() // This is the main menu for the status item
 
         // Pet selection submenu
         let selectPetMenu = NSMenu(title: "Select Pet")
+        selectPetMenu.delegate = self
+        self.selectPetSubmenuForDelegate = selectPetMenu // Store the reference
+
         for petType in PetType.allCases {
             let menuItem = NSMenuItem(title: petType.friendlyName, action: #selector(selectPet(_:)), keyEquivalent: "")
             menuItem.target = self
             menuItem.representedObject = petType
-            if petViewModel.currentPetType == petType {
-                menuItem.state = .on // Checkmark current pet
-            }
             selectPetMenu.addItem(menuItem)
         }
         let selectPetParentItem = NSMenuItem(title: "Select Pet", action: nil, keyEquivalent: "")
         selectPetParentItem.submenu = selectPetMenu
         menu.addItem(selectPetParentItem)
 
-        menu.addItem(NSMenuItem(title: "Feed Pet", action: #selector(feedPet), keyEquivalent: "f"))
+        // menu.addItem(NSMenuItem(title: "Feed Pet", action: #selector(feedPet), keyEquivalent: "f"))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit Project Paws", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        
         statusItem.menu = menu
     }
 
@@ -96,6 +99,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         NSLog("AppDelegate (Adaptor): setupPetWindow - FINISHED")
     }
+    
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        guard menu === self.selectPetSubmenuForDelegate else {
+            return
+        }
+
+        NSLog("AppDelegate: menuNeedsUpdate for '\(menu.title)'. Current ViewModel pet: \(petViewModel.currentPetType.friendlyName)")
+        
+        for item in menu.items {
+            if let petType = item.representedObject as? PetType {
+                // Now 'item' is the NSMenuItem, and 'petType' is the unwrapped PetType
+                if petViewModel.currentPetType == petType {
+                    item.state = .on // Use 'item' directly
+                    NSLog("AppDelegate: menuNeedsUpdate - Checkmarking \(petType.friendlyName)")
+                } else {
+                    item.state = .off
+                }
+            }
+        }
+    }
 
     @objc func selectPet(_ sender: NSMenuItem) {
         if let petType = sender.representedObject as? PetType {
@@ -104,9 +127,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    // Commented out due to buttion removed
+    /*
     @objc func feedPet() {
         petViewModel.feedPet()
     }
+     */
     
     func applicationWillTerminate(_ notification: Notification) {
         petViewModel.performCleanup()

@@ -21,13 +21,14 @@ class PetViewModel: ObservableObject {
     private var temporaryStateTimer: Timer? // For states like eating, beingPetted
 
     init() {
-        NSLog("DEBUG-NSLog: PetViewModel init - STARTING")
-        // self.startTimers() // Keep this commented for now if it was
-        NSLog("DEBUG-NSLog: PetViewModel init - FINISHED")
+        self.startTimers()
     }
 
     func changePet(to type: PetType) {
+        if currentPetType == type { return }
+        let oldType = currentPetType
         currentPetType = type
+        NSLog("PetViewModel: currentPetType changed from \(oldType.friendlyName) to \(currentPetType.friendlyName)")
         resetPetState()
     }
 
@@ -41,29 +42,34 @@ class PetViewModel: ObservableObject {
         }
     }
 
+    // TODO: Change hapiness score
     func petInteracted() {
         lastInteractionTime = Date()
         happinessScore = min(100, happinessScore + 20)
         
+        // TODO: change temporar state?
         enterTemporaryState(.sitting, duration: 1.5) // Example: pet sits happily
         // Alternatively: enterTemporaryState(determineBaseStateFromHappiness(), duration: 1.5)
         resetInactivityTimer()
         objectWillChange.send() // Ensure UI updates if state changes
     }
 
+    // Called from AppDelegate menu, commented out due to buttion removed
+    /*
     func feedPet() {
         lastInteractionTime = Date()
         happinessScore = min(100, happinessScore + 30)
 
-        enterTemporaryState(.idleHappy, duration: 2.0) // Example: pet is happy after eating
+        enterTemporaryState(.idleHappy, duration: 2.0)
         resetInactivityTimer()
-        objectWillChange.send() // Ensure UI updates
+        objectWillChange.send()
     }
+     */
     
     private func enterTemporaryState(_ state: PetState, duration: TimeInterval) {
         temporaryStateTimer?.invalidate()
         currentState = state
-        // positionOffset = .zero // Reset offset if the temporary state shouldn't have one
+        // positionOffset = .zero
 
         temporaryStateTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { [weak self] _ in
             guard let self = self else { return }
@@ -99,7 +105,6 @@ class PetViewModel: ObservableObject {
                 return
             }
         }
-
 
         let timeSinceLastInteraction = Date().timeIntervalSince(lastInteractionTime)
 

@@ -8,7 +8,6 @@
 // Defines the different types of pets
 enum PetType: String, CaseIterable, Identifiable {
     case cat = "cat"
-    case dog = "dog"
     case bunny = "bunny"
 
     var id: String { self.rawValue }
@@ -16,7 +15,6 @@ enum PetType: String, CaseIterable, Identifiable {
     var friendlyName: String {
         switch self {
         case .cat: return "Cat"
-        case .dog: return "Dog"
         case .bunny: return "Bunny"
         }
     }

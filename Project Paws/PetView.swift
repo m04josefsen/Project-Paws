@@ -32,40 +32,25 @@ class PetView: NSView {
     private var particles: [(point: CGPoint, symbol: String, color: NSColor, alpha: CGFloat, dy: CGFloat)] = []
 
     // Animation Configuration Dictionary
+    private static let baseFrameDuration: Double = 0.25  // Each frame shows for 0.25 seconds
     private static let animationConfigurations: [String: AnimationConfig] = [
         // Cat
-        "cat_idleNeutral_sheet": AnimationConfig(sheetName: "cat_idleNeutral_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 14, speed: 0.25),
-        "cat_idleHappy_sheet": AnimationConfig(sheetName: "cat_idleHappy_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 18, speed: 0.2),
-        // TODO: missing
-        "cat_idleSad_sheet": AnimationConfig(sheetName: "cat_idleSad_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.3),
-        "cat_sleeping_sheet": AnimationConfig(sheetName: "cat_sleeping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.9),
-        "cat_sitting_sheet": AnimationConfig(sheetName: "cat_sitting_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.5),
-        "cat_running_sheet": AnimationConfig(sheetName: "cat_running_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 7, speed: 0.1),
-        "cat_jumping_sheet": AnimationConfig(sheetName: "cat_jumping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 13, speed: 0.12),
-
-        // Dog
-        // TODO: shows up wrong
-        "dog_idleNeutral_sheet": AnimationConfig(sheetName: "dog_idleNeutral_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 10, speed: 0.25),
-        // TODO: missing
-        "dog_idleHappy_sheet": AnimationConfig(sheetName: "dog_idleHappy_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 5, speed: 0.15),
-        // TODO: missing
-        "dog_idleSad_sheet": AnimationConfig(sheetName: "dog_idleSad_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.3),
-        "dog_sleeping_sheet": AnimationConfig(sheetName: "dog_sleeping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 8, speed: 0.8),
-        "dog_sitting_sheet": AnimationConfig(sheetName: "dog_sitting_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 8, speed: 0.5),
-        "dog_running_sheet": AnimationConfig(sheetName: "dog_running_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 6, speed: 0.1),
-        // TODO: missing
-        "dog_jumping_sheet": AnimationConfig(sheetName: "dog_jumping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 5, speed: 0.12),
+        "cat_idleNeutral_sheet": AnimationConfig(sheetName: "cat_idleNeutral_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 14, speed: baseFrameDuration),
+        "cat_idleHappy_sheet": AnimationConfig(sheetName: "cat_idleHappy_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 18, speed: baseFrameDuration),
+        "cat_idleSad_sheet": AnimationConfig(sheetName: "cat_idleSad_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: baseFrameDuration),
+        "cat_sleeping_sheet": AnimationConfig(sheetName: "cat_sleeping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: baseFrameDuration),
+        "cat_sitting_sheet": AnimationConfig(sheetName: "cat_sitting_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: baseFrameDuration),
+        "cat_running_sheet": AnimationConfig(sheetName: "cat_running_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 7, speed: baseFrameDuration),
+        "cat_jumping_sheet": AnimationConfig(sheetName: "cat_jumping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 13, speed: baseFrameDuration),
 
         // Bunny
-        "bunny_idleNeutral_sheet": AnimationConfig(sheetName: "bunny_idleNeutral_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 12, speed: 0.3),
-        "bunny_idleHappy_sheet": AnimationConfig(sheetName: "bunny_idleHappy_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 5, speed: 0.2),
-        // TODO: missing
-        "bunny_idleSad_sheet": AnimationConfig(sheetName: "bunny_idleSad_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: 0.35),
-        "bunny_sleeping_sheet": AnimationConfig(sheetName: "bunny_sleeping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 6, speed: 0.9),
-        // TODO: missing
-        "bunny_sitting_sheet": AnimationConfig(sheetName: "bunny_sitting_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 1, speed: 0.5),
-        "bunny_running_sheet": AnimationConfig(sheetName: "bunny_running_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 8, speed: 0.12),
-        "bunny_jumping_sheet": AnimationConfig(sheetName: "bunny_jumping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 11, speed: 0.15)
+        "bunny_idleNeutral_sheet": AnimationConfig(sheetName: "bunny_idleNeutral_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 12, speed: baseFrameDuration),
+        "bunny_idleHappy_sheet": AnimationConfig(sheetName: "bunny_idleHappy_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 5, speed: baseFrameDuration),
+        "bunny_idleSad_sheet": AnimationConfig(sheetName: "bunny_idleSad_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: baseFrameDuration),
+        "bunny_sleeping_sheet": AnimationConfig(sheetName: "bunny_sleeping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 6, speed: baseFrameDuration),
+        "bunny_sitting_sheet": AnimationConfig(sheetName: "bunny_sitting_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 1, speed: baseFrameDuration),
+        "bunny_running_sheet": AnimationConfig(sheetName: "bunny_running_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 8, speed: baseFrameDuration),
+        "bunny_jumping_sheet": AnimationConfig(sheetName: "bunny_jumping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 11, speed: baseFrameDuration)
     ]
 
     init(viewModel: PetViewModel) {
@@ -234,6 +219,7 @@ class PetView: NSView {
         var shouldAnimateParticles = false
         let currentHappiness = viewModel.happinessScore
 
+        // TODO: change this
         switch viewModel.currentState {
         case .idleHappy:
              if currentHappiness > 60 {
@@ -241,12 +227,11 @@ class PetView: NSView {
                 color = .systemRed
                 shouldAnimateParticles = true
             }
-        case .sitting: // If sitting is used as a temporary happy state from an interaction
-            // The check for temporaryStateTimer?.isValid was incorrect as the timer is in the ViewModel.
+        case .sitting:
             // If the pet is sitting and happy, it's likely due to a recent positive interaction.
             if currentHappiness > 60 {
                 symbol = "heart.fill"
-                color = .systemPink // Slightly different color for variety
+                color = .systemPink
                 shouldAnimateParticles = true
             }
         case .idleSad:
