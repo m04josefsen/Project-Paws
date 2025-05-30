@@ -60,6 +60,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(selectPetParentItem)
 
         // menu.addItem(NSMenuItem(title: "Feed Pet", action: #selector(feedPet), keyEquivalent: "f"))
+        // TODO: For debugging
+        menu.addItem(NSMenuItem(title: "Make pet walk", action: #selector(makePetWalk), keyEquivalent: "j"))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit Project Paws", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         
@@ -133,6 +135,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         petViewModel.feedPet()
     }
      */
+    
+    // TODO: For debugging
+    @objc func makePetWalk() {
+        petViewModel.decideToWalk()
+    }
     
     func applicationWillTerminate(_ notification: Notification) {
         petViewModel.performCleanup()

@@ -157,10 +157,6 @@ class PetView: NSView {
         super.draw(dirtyRect)
 
         if let imageToDraw = currentSpriteSheet, currentFrameSize.width > 0, currentFrameSize.height > 0 {
-            let sourceRectX = CGFloat(currentFrameIndex) * currentFrameSize.width
-            let sourceRectY: CGFloat = 0
-            let sourceRect = NSRect(x: sourceRectX, y: sourceRectY, width: currentFrameSize.width, height: currentFrameSize.height)
-
             let viewAspectRatio = bounds.width / bounds.height
             let petImageAspectRatio = currentFrameSize.width / currentFrameSize.height
             
@@ -173,23 +169,49 @@ class PetView: NSView {
                 drawHeight = drawWidth / petImageAspectRatio
             }
             
-            let maxDisplaySizeFactor: CGFloat = 0.95 // Allow pet to take up to 95% of the smaller dimension of PET_WINDOW_SIZE
+            let maxDisplaySizeFactor: CGFloat = 0.95
             let maxAllowedWidth = PET_WINDOW_SIZE.width * maxDisplaySizeFactor
             let maxAllowedHeight = PET_WINDOW_SIZE.height * maxDisplaySizeFactor
 
             if drawWidth > maxAllowedWidth || drawHeight > maxAllowedHeight {
                 let widthScale = maxAllowedWidth / drawWidth
                 let heightScale = maxAllowedHeight / drawHeight
-                let scale = min(widthScale, heightScale) // Use the smaller scale to fit both dimensions
+                let scale = min(widthScale, heightScale)
                 drawWidth *= scale
                 drawHeight *= scale
             }
 
-            let petOriginX = (bounds.width - drawWidth) / 2 + viewModel.positionOffset.x
-            let petOriginY = (bounds.height - drawHeight) / 2 + viewModel.positionOffset.y
-            let destinationRect = NSRect(x: petOriginX, y: petOriginY, width: drawWidth, height: drawHeight)
+            // The pet's visual center within the view will be shifted by viewModel.positionOffset
+            let petOriginXBase = (bounds.width - drawWidth) / 2
+            let petOriginYBase = (bounds.height - drawHeight) / 2
+            
+            let finalPetOriginX = petOriginXBase + viewModel.positionOffset.x
+            let finalPetOriginY = petOriginYBase + viewModel.positionOffset.y // Y offset not used for walking yet
+
+            let destinationRect = NSRect(x: finalPetOriginX, y: finalPetOriginY, width: drawWidth, height: drawHeight)
+            let sourceRect = NSRect(x: CGFloat(currentFrameIndex) * currentFrameSize.width, y: 0, width: currentFrameSize.width, height: currentFrameSize.height)
+
+
+            // --- Apply Flipping Transform ---
+            NSGraphicsContext.current?.saveGraphicsState() // Save current graphics state
+
+            // Create a transform
+            let transform = NSAffineTransform()
+            
+            // Translate to the center of the destinationRect for scaling around its center
+            transform.translateX(by: destinationRect.midX, yBy: destinationRect.midY)
+            // Apply scale (flip if currentXScale is -1)
+            transform.scaleX(by: viewModel.currentXScale, yBy: 1.0)
+            // Translate back
+            transform.translateX(by: -destinationRect.midX, yBy: -destinationRect.midY)
+            
+            transform.concat() // Apply this transform to the graphics context
 
             imageToDraw.draw(in: destinationRect, from: sourceRect, operation: .sourceOver, fraction: 1.0)
+            
+            NSGraphicsContext.current?.restoreGraphicsState() // Restore graphics state
+            // --- End Flipping Transform ---
+
         } else {
             NSColor.systemPurple.withAlphaComponent(0.5).setFill()
             let fallbackRect = bounds.insetBy(dx: bounds.width * 0.25, dy: bounds.height * 0.25)
