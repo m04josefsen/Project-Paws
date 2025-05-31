@@ -16,3 +16,4 @@
 
 - **Missing Assets: bunny sitting, idleSad for all, dog idleHappy**
 - **Fix sleeping, sitting, emotion mechanism**
+- **Makepet window in the middle, but make pet spawn left/right of notch
