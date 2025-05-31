@@ -22,6 +22,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         petViewModel.$currentPetType.sink { [weak self] _ in
             self?.updateStatusMenu() // Rebuild menu structure if pet type affects it
         }.store(in: &cancellables)
+        
+        petViewModel.$happinessScore.sink { [weak self] newHappinessScore in
+                   NSLog("AppDelegate: $happinessScore changed to \(newHappinessScore), updating menu.")
+                   self?.updateStatusMenu()
+               }.store(in: &cancellables)
     }
 
     private func setupStatusItem() {
@@ -57,6 +62,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         // Debug menu item for walking
         menu.addItem(NSMenuItem(title: "Make Pet Walk", action: #selector(makePetWalk), keyEquivalent: "j"))
+        menu.addItem(NSMenuItem.separator())
+        
+        let happinessLevel = petViewModel.happinessScore
+        let happinessItemTitle = "Happiness: \(happinessLevel)/100"
+        let happinessItem = NSMenuItem(title: happinessItemTitle, action: nil, keyEquivalent: "")
+        happinessItem.isEnabled = false // Make it non-interactive, just for display
+        menu.addItem(happinessItem)
+        
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit Project Paws", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         

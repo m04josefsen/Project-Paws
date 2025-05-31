@@ -214,6 +214,7 @@ class PetView: NSView {
         
         NSGraphicsContext.current?.restoreGraphicsState()
         
+        // TODO: particle drawing wrong?
         // Particle drawing
         for particle in particles {
             // Using a fixed size for particles relative to original pet window design (smaller part of it)
