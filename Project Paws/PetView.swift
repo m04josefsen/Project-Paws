@@ -42,8 +42,8 @@ class PetView: NSView {
         "cat_idleSad_sheet": AnimationConfig(sheetName: "cat_idleSad_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: baseFrameDuration),
         "cat_sleeping_sheet": AnimationConfig(sheetName: "cat_sleeping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: baseFrameDuration),
         "cat_sitting_sheet": AnimationConfig(sheetName: "cat_sitting_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 3, speed: baseFrameDuration),
-        "cat_running_sheet": AnimationConfig(sheetName: "cat_running_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 7, speed: baseFrameDuration / 2.0), // Faster speed for running
-        "cat_jumping_sheet": AnimationConfig(sheetName: "cat_jumping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 13, speed: baseFrameDuration / 1.5), // Faster for jumping
+        "cat_running_sheet": AnimationConfig(sheetName: "cat_running_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 7, speed: baseFrameDuration / 2.0),
+        "cat_jumping_sheet": AnimationConfig(sheetName: "cat_jumping_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 13, speed: baseFrameDuration / 1.5),
 
         // Bunny
         "bunny_idleNeutral_sheet": AnimationConfig(sheetName: "bunny_idleNeutral_sheet", frameSize: CGSize(width: 32, height: 32), frameCount: 12, speed: baseFrameDuration),
@@ -241,19 +241,20 @@ class PetView: NSView {
 
         switch viewModel.currentState {
         case .idleHappy:
-             if currentHappiness > 60 {
+             if currentHappiness > VALUE_HAPPY {
                 symbol = "heart.fill"
                 color = .systemRed
                 shouldAnimateParticles = true
             }
-        case .sitting: // Often a temporary happy state from interaction
-            if currentHappiness > 60 {
+        case .sitting:
+            if currentHappiness > VALUE_HAPPY {
                 symbol = "heart.fill"
                 color = .systemPink
                 shouldAnimateParticles = true
             }
-        case .idleSad:
-            if currentHappiness < 40 {
+        case .idleNeutral:
+            // TODO: shown in intervals?
+            if currentHappiness < VALUE_SAD {
                 symbol = "heart.slash.fill"
                 color = .systemGray
                 shouldAnimateParticles = true

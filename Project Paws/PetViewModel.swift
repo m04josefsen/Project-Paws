@@ -51,15 +51,15 @@ class PetViewModel: ObservableObject {
 
     func petInteracted() {
         lastInteractionTime = Date()
-        happinessScore = min(100, happinessScore + 20)
+        happinessScore = min(100, happinessScore + 15)
         enterTemporaryState(.sitting, duration: 1.5)
         resetInactivityTimer()
     }
 
     private func determineBaseStateFromHappiness() -> PetState {
-        if happinessScore > 70 { return .idleHappy }
-        if happinessScore > 30 { return .idleNeutral }
-        return .idleSad
+        if happinessScore > VALUE_HAPPY { return .idleHappy }
+        // If sad, idleNeutral with hearthbreaks is shown
+        return .idleNeutral
     }
     
     private func enterTemporaryState(_ state: PetState, duration: TimeInterval) {
@@ -98,9 +98,9 @@ class PetViewModel: ObservableObject {
 
         let timeSinceLastInteraction = Date().timeIntervalSince(lastInteractionTime)
 
-        if timeSinceLastInteraction > 15.0 {
+        if timeSinceLastInteraction > 120.0 {
             let oldHappiness = happinessScore
-            happinessScore = max(0, happinessScore - 2)
+            happinessScore = max(0, happinessScore - 5)
             if oldHappiness != happinessScore { NSLog("PetViewModel: Happiness degraded to \(happinessScore).") }
         }
 
@@ -130,7 +130,7 @@ class PetViewModel: ObservableObject {
         }
     }
 
-    // Public for your debugging menu item, can be private later
+    // TODO: Public for your debugging menu item, can be private later
     func decideToWalk() {
         guard !isWalkingCurrently, currentState.isIdleVariant else {
             if !currentState.isIdleVariant { NSLog("PetViewModel: DecideToWalk - Not walking, pet not idle (State: \(currentState.rawValue)).") }
